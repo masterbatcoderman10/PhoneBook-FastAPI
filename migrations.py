@@ -17,8 +17,8 @@ class Base(DeclarativeBase):
 
 class User(Base):
     __tablename__ = "users"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, unique=True, nullable=False, autoincrement=True)
+    username: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String, nullable=False)
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False)
     disabled: Mapped[bool] = mapped_column(Boolean, nullable=False)
