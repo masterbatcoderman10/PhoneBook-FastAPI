@@ -1,9 +1,16 @@
-from fastapi import APIRouter
-from fastapi.security import OAuth2PasswordBearer
+from typing import Annotated, Union
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer, APIKeyCookie
 from pydantic import BaseModel
+from .users import get_current_user_id
+from ..migrations import User
+from ..migrations import Contact
+from ..dependencies import engine
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-class Contact(BaseModel):
-    id: int
+class ContactM(BaseModel):
+    id : int
     name: str
     phone: str
     age: int
@@ -21,24 +28,28 @@ GOOGLE_CLIENT_SECRET = "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"
 
 #http://localhost/token is where the user should use to get the token.abs
 #This token will be generated during signin and will be used to authenticate the user later on.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-mock_contacts = [
-        {"id": 1,"name": "John Doe", "phone": "555-555-5555", "age": 30},
-    ]
 
 @router.get("/")
-async def get_contacts() -> list[Contact]:
+async def get_contacts(user_id : Annotated[int, Depends(get_current_user_id)]) -> list[ContactM]:
     #have to add JWT authentication
-    return mock_contacts
+    with Session(engine) as session:
+        contacts = session.execute(select(Contact).where(Contact.user_id == user_id)).scalars().all()
+        map(lambda contact : ContactM(id=contact.id, name=contact.name, phone=contact.phone, age=contact.age), contacts)
+    return contacts
+
 
 @router.get("/{contact_id}")
-async def get_contact(contact_id: int) -> Contact:
+async def get_contact(user_id : Annotated[int, Depends(get_current_user_id)], contact_id: int) -> ContactM:
     #have to add JWT authentication
-    return mock_contacts[contact_id]
+    with Session(engine) as session:
+        contact = session.execute(select(Contact).where(Contact.user_id == user_id and Contact.id == contact_id)).scalars().first()
+    return ContactM(name=contact.name, phone=contact.phone, age=contact.age)
 
 
 @router.post("/")
-async def add_contact(contact: Contact):
+async def add_contact(user_id : Annotated[int, Depends(get_current_user_id)], contact: ContactM):
     #have to add JWT authentication
-    return contact
+    with Session(engine) as session:
+        session.add(Contact(user_id=user_id, name=contact.name, phone=contact.phone, age=contact.age))
+        session.commit()
+    return {"message": "Contact added successfully"}
