@@ -8,3 +8,5 @@ psql_url = os.getenv("PSQL_URL")
 
 def get_db_engine():
     return create_engine(psql_url, pool_size=3, max_overflow=0)
+
+engine = get_db_engine()
