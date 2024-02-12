@@ -41,6 +41,7 @@ class TokenData(BaseModel):
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 cookie_scheme = APIKeyCookie(name="access_token", auto_error=True)
+refresh_cookie_scheme = APIKeyCookie(name="refresh_token", auto_error=True)
 
 router = APIRouter(
     prefix="/users",
@@ -184,6 +185,12 @@ async def signup_fp(response: Response, username: str = Form(), password: str = 
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
 
     return {"message" : "Signup successful"}
+
+@router.post("/logout")
+async def logout_fp(response: Response, access_token: Annotated[str, Depends(cookie_scheme)]):
+    response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
+    return {"message" : "Logout successful"}
 
 @router.get("/me")
 async def read_users_me(current_user: Annotated[UserM, Depends(get_current_user)]):

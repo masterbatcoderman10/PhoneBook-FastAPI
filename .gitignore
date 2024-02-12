@@ -4,3 +4,4 @@ __init__.py
 __pycache__/
 id_rsa
 id_rsa.pub
+.DS_Store

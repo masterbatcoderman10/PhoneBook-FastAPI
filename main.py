@@ -14,6 +14,8 @@ app.include_router(users.router)
 app.include_router(google.router)
 
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
+#add SECRET_KEY to app config
+
 
 
 

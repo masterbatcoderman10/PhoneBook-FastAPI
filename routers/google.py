@@ -10,6 +10,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 from ..migrations import User
 from ..dependencies import engine
+from .users import get_tokens, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
 import os
 from dotenv import load_dotenv
 from starlette.config import Config
@@ -60,11 +61,29 @@ async def login_google(request: Request):
     
 
 @router.get("/auth")
-async def auth(request: Request):
+async def auth(request: Request, response: Response):
     print(request.session)
     try:
         token = await oauth.google.authorize_access_token(request)
         userinfo = token.get('userinfo')
+        #check if user exists in db if they don't add them
+        with Session(engine) as session:
+            user = session.execute(select(User).where(User.username == userinfo['email'])).scalars().first()
+            if user is None:
+                #create user
+                user = User(username=userinfo['email'], password="none", verified=True, disabled=False)
+                session.add(user)
+                session.commit()
+
+        access_token, refresh_token = get_tokens(userinfo['email'])
+        response.set_cookie(key="access_token", value=access_token, httponly=True)
+        response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
+
+        return {"message" : "Signup successful"}
+
+
+
+
         request.session.pop('_state_google_' + request.query_params['state'], None)
     except OAuthError as e:
         print(e)
@@ -82,9 +101,12 @@ async def auth(request: Request):
 
 
 @router.get("/logout")
-async def logout(request: Request):
+async def logout(request: Request, response: Response):
     # Delete the user's session
     request.session.clear()
+    # Delete the user's cookies
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
     # Return a response indicating that the user has been logged out
     return {"detail": "Logged out"}
 
