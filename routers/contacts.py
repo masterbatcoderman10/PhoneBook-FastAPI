@@ -43,8 +43,8 @@ async def get_contacts(user_id : Annotated[int, Depends(get_current_user_id)]) -
 async def get_contact(user_id : Annotated[int, Depends(get_current_user_id)], contact_id: int) -> ContactM:
     #have to add JWT authentication
     with Session(engine) as session:
-        contact = session.execute(select(Contact).where(Contact.user_id == user_id and Contact.id == contact_id)).scalars().first()
-    return ContactM(name=contact.name, phone=contact.phone, age=contact.age)
+        contact = session.execute(select(Contact).where((Contact.user_id == user_id) & (Contact.id == contact_id))).scalars().first()
+    return ContactM(id=contact.id, name=contact.name, phone=contact.phone, age=contact.age)
 
 
 @router.post("/")
