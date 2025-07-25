@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routers import contacts, users, google
+from routers import contacts, users, google
 from starlette.middleware.sessions import SessionMiddleware
 import os
 from dotenv import load_dotenv

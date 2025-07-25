@@ -1,8 +1,18 @@
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-from ..migrations import Base
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Import Base from the migrations.py file in parent directory
+import importlib.util
+spec = importlib.util.spec_from_file_location("migrations_models", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "migrations.py"))
+migrations_models = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(migrations_models)
+Base = migrations_models.Base
 from alembic import context
+import os
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -37,7 +47,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = os.getenv("PSQL_URL") or config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -56,8 +66,13 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    # Override database URL from environment if available
+    config_section = config.get_section(config.config_ini_section, {})
+    if os.getenv("PSQL_URL"):
+        config_section["sqlalchemy.url"] = os.getenv("PSQL_URL")
+    
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        config_section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
