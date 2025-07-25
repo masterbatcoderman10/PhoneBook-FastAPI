@@ -28,12 +28,12 @@ class Contact(Base):
     __tablename__ = "contacts"
     id: Mapped[int] = mapped_column(primary_key=True, unique=True, nullable=False, autoincrement=True)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(String, nullable=False, index=True)
     phone: Mapped[str] = mapped_column(String, nullable=False)
     age: Mapped[int] = mapped_column(Integer, nullable=False)
 
 engine = get_db_engine()
-
+# Base.metadata.bind = engine
 # Base.metadata.create_all(engine)
 
 mock_users_db = [

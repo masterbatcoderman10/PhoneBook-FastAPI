@@ -1,4 +1,5 @@
-from typing import Annotated, Union
+from typing import Union
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, APIKeyCookie
 from pydantic import BaseModel
@@ -53,3 +54,14 @@ async def add_contact(user_id : Annotated[int, Depends(get_current_user_id)], co
         session.add(Contact(user_id=user_id, name=contact.name, phone=contact.phone, age=contact.age))
         session.commit()
     return {"message": "Contact added successfully"}
+
+
+@router.delete("/{contact_id}")
+async def delete_contact(user_id : Annotated[int, Depends(get_current_user_id)], contact_id: int):
+    with Session(engine) as session:
+        contact = session.execute(select(Contact).where(Contact.user_id == user_id, Contact.id == contact_id)).scalars().first()
+        if not contact:
+            raise HTTPException(status_code=404, detail="Contact not found")
+        session.delete(contact)
+        session.commit()
+    return {"message": "Contact deleted successfully"}
