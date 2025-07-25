@@ -8,7 +8,7 @@ from fastapi.responses import RedirectResponse
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from migrations import User
+from models import User
 from dependencies import engine
 from .users import get_tokens, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
 import os

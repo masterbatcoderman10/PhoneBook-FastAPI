@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, AP
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from migrations import User
+from models import User
 from dependencies import engine
 import os
 from dotenv import load_dotenv

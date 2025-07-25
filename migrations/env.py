@@ -5,12 +5,12 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import Base from the migrations.py file in parent directory
+# Import Base from the models.py file in parent directory
 import importlib.util
-spec = importlib.util.spec_from_file_location("migrations_models", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "migrations.py"))
-migrations_models = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(migrations_models)
-Base = migrations_models.Base
+spec = importlib.util.spec_from_file_location("models", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models.py"))
+models = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(models)
+Base = models.Base
 from alembic import context
 import os
 

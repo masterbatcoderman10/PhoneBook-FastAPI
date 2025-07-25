@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, APIKeyCookie
 from pydantic import BaseModel
 from .users import get_current_user_id
-from migrations import User
-from migrations import Contact
+from models import User
+from models import Contact
 from dependencies import engine
 from sqlalchemy import select
 from sqlalchemy.orm import Session
